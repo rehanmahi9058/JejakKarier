@@ -1,5 +1,5 @@
 <?php
-use App\Http\Controllers\{AuthController, DashboardController, KatalogController, MentoringController, PetaKarierController, SesiController};
+use App\Http\Controllers\{AuthController, DashboardController, KatalogController, MentoringController, PetaKarierController, SesiController, SlotMentorController};
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [KatalogController::class, 'beranda'])->name('beranda');
@@ -35,11 +35,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/slot/{slot}/pesan', [SesiController::class, 'pesan'])->name('sesi.pesan');
     Route::post('/sesi/{sesi}/{aksi}', [SesiController::class, 'ubahStatus'])->name('sesi.aksi');
 
-    // TODO tahap berikutnya: /profil, /mentor/* (portofolio, slot, profil), /sesi
-    Route::prefix('mentor')->middleware('mentor')->group(function () {});
+    Route::prefix('mentor')->name('mentor.')->middleware('mentor')->group(function () {
+        Route::get('/slot', [SlotMentorController::class, 'index'])->name('slot.index');
+        Route::post('/slot', [SlotMentorController::class, 'store'])->name('slot.store');
+        Route::post('/slot/tutup-massal', [SlotMentorController::class, 'tutupMassal'])->name('slot.tutup-massal');
+        Route::patch('/slot/{slot}/tutup', [SlotMentorController::class, 'tutup'])->name('slot.tutup');
+        Route::patch('/slot/{slot}/buka', [SlotMentorController::class, 'buka'])->name('slot.buka');
+        Route::delete('/slot/{slot}', [SlotMentorController::class, 'hapus'])->name('slot.hapus');
+    });
 });
 
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', fn () => view('dashboard.index'))->name('admin.ringkasan'); // TODO: AdminController
 });
-

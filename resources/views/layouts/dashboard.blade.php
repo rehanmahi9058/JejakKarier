@@ -20,7 +20,7 @@
   // [label, nama rute atau '#', pola rute aktif, ikon]
   $menu = match ($u->peran) {
     'admin' => [['Ringkasan', 'admin.ringkasan', 'admin*', 'grid'], ['Portofolio', '#', '', 'folder'], ['Profil Saya', 'profil.edit', 'profil*', 'user'], ['Kelola Mentor dan Akun', '#', '', 'users']],
-    'mentor' => [['Ringkasan', 'dashboard', 'dashboard', 'grid'], ['Portofolio', '#', '', 'folder'], ['Slot Jadwal', '#', '', 'cal'], ['Mentoring', '#', '', 'users'], ['Profil Saya', 'profil.edit', 'profil*', 'user']],
+    'mentor' => [['Ringkasan', 'dashboard', 'dashboard', 'grid'], ['Portofolio', '#', '', 'folder'], ['Slot Jadwal', 'mentor.slot.index', 'mentor.slot*', 'cal'], ['Mentoring', '#', '', 'users'], ['Profil Saya', 'profil.edit', 'profil*', 'user']],
     default => [['Ringkasan', 'dashboard', 'dashboard', 'grid'], ['Portofolio', 'katalog', 'katalog*', 'folder'], ['Peta Karier', 'peta-karier.index', 'peta-karier*', 'map'], ['Mentoring', 'mentoring.index', 'mentoring*', 'users'], ['Profil Saya', 'profil.edit', 'profil*', 'user']],
   };
   $label = ['admin' => 'Menu Admin', 'mentor' => 'Mentor Portal', 'pengguna' => 'Menu Pengguna'][$u->peran];
