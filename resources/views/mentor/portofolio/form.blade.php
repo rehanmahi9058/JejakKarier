@@ -4,7 +4,7 @@
 @php($inp = 'mt-2 w-full rounded-xl border-slate-200 px-4 py-3 text-sm placeholder:text-slate-400 focus:border-brand focus:ring-brand')
 <a href="{{ route('mentor.portofolio.index') }}" class="text-sm font-semibold text-brand">← Kembali ke Portofolio Saya</a>
 <h1 class="mt-3 text-3xl font-extrabold text-slate-900">{{ $entri->exists ? 'Ubah entri portofolio' : 'Tambah entri portofolio' }}</h1>
-<p class="mt-1 text-sm text-slate-500">Hanya entri berstatus <b>terbit</b> yang tampil di katalog publik.</p>
+<p class="mt-1 text-sm text-slate-500">Portofolio yang diajukan untuk diterbitkan akan diperiksa admin terlebih dahulu.</p>
 
 <form method="POST" enctype="multipart/form-data" x-data="{ pratinjau: null }" class="mt-6 max-w-3xl space-y-5 rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-100"
       action="{{ $entri->exists ? route('mentor.portofolio.update', $entri) : route('mentor.portofolio.store') }}">
@@ -61,8 +61,8 @@
   <div>
     <p class="text-sm font-semibold">Status</p>
     <div class="mt-2 grid gap-3 sm:grid-cols-2">
-      @foreach (['draf' => ['Draf', 'Disimpan, belum tampil di katalog.'], 'terbit' => ['Terbit', 'Tampil di katalog (jika syarat kurasi terpenuhi).']] as $k => [$t, $d])
-        <label class="cursor-pointer"><input type="radio" name="status" value="{{ $k }}" class="peer sr-only" @checked(old('status', $entri->status) === $k)>
+      @foreach (['draf' => ['Simpan sebagai draf', 'Disimpan dan belum dikirim untuk diperiksa.'], 'menunggu' => ['Ajukan publikasi', 'Dikirim ke admin. Akan tampil setelah disetujui.']] as $k => [$t, $d])
+        <label class="cursor-pointer"><input type="radio" name="status" value="{{ $k }}" class="peer sr-only" @checked(old('status', in_array($entri->status, ['draf', 'menunggu'], true) ? $entri->status : 'menunggu') === $k)>
           <span class="block rounded-2xl border border-slate-200 p-4 peer-checked:border-brand peer-checked:bg-brand-50"><b class="text-sm">{{ $t }}</b><span class="mt-1 block text-xs text-slate-500">{{ $d }}</span></span></label>
       @endforeach
     </div>

@@ -60,6 +60,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/profil', [AdminController::class, 'profil'])->name('admin.profil');
     Route::put('/profil', [AdminController::class, 'ubahProfil'])->name('admin.profil.ubah');
     Route::get('/akun', [AdminController::class, 'akun'])->name('admin.akun');
+    Route::get('/portofolio', [AdminController::class, 'portofolio'])->name('admin.portofolio');
+    Route::post('/portofolio/{portofolio}/tinjau', [AdminController::class, 'tinjauPortofolio'])->name('admin.portofolio.tinjau');
     Route::post('/mentor/{profil}/verifikasi', [AdminController::class, 'verifikasi'])->name('admin.mentor.verifikasi');
     Route::patch('/akun/{user}/status', [AdminController::class, 'ubahStatus'])->name('admin.akun.status');
 });

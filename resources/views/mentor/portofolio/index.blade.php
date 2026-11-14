@@ -19,8 +19,8 @@
   <a href="{{ route('mentor.portofolio.create') }}" class="rounded-full bg-brand px-6 py-3 text-sm font-bold text-white shadow-lg shadow-brand/30 hover:bg-brand-600">+ Tambah Entri</a>
 </div>
 
-<div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-  @foreach ([['Total portofolio', $jumlah['semua'], 'text-slate-900'], ['Aktif terbit', $jumlah['terbit'], 'text-emerald-700'], ['Draf disimpan', $jumlah['draf'], 'text-slate-900']] as [$l, $n, $w])
+<div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+  @foreach ([['Total portofolio', $jumlah['semua'], 'text-slate-900'], ['Aktif terbit', $jumlah['terbit'], 'text-emerald-700'], ['Menunggu persetujuan', $jumlah['menunggu'], 'text-amber-600'], ['Draf disimpan', $jumlah['draf'], 'text-slate-900']] as [$l, $n, $w])
     <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
       <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">{{ $l }}</p>
       <p class="mt-3 text-4xl font-extrabold {{ $w }}">{{ $n }}</p>
@@ -35,7 +35,7 @@
 
 <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
   <div class="inline-flex rounded-full bg-brand-50 p-1.5 text-sm font-semibold">
-    @foreach (['semua' => 'Semua', 'terbit' => 'Terbit', 'draf' => 'Draf'] as $k => $v)
+    @foreach (['semua' => 'Semua', 'menunggu' => 'Menunggu', 'terbit' => 'Terbit', 'ditolak' => 'Ditolak', 'draf' => 'Draf'] as $k => $v)
       <a href="{{ $ke(['tab' => $k === 'semua' ? null : $k, 'page' => null]) }}" class="rounded-full px-5 py-2 {{ $tab === $k ? 'bg-brand text-white' : 'text-slate-600' }}">{{ $v }} ({{ $jumlah[$k] }})</a>
     @endforeach
   </div>
@@ -54,13 +54,14 @@
       <div class="min-w-0 flex-1">
         <div class="flex flex-wrap items-center gap-2">
           <h2 class="text-lg font-bold text-slate-900">{{ $e->judul }}</h2>
-          <span class="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase {{ $e->status === 'terbit' ? 'bg-brand-100 text-brand' : 'bg-slate-100 text-slate-500' }}">● {{ $e->status }}</span>
+          <span class="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase {{ ['terbit' => 'bg-emerald-50 text-emerald-700', 'menunggu' => 'bg-amber-50 text-amber-700', 'ditolak' => 'bg-red-50 text-red-600', 'draf' => 'bg-slate-100 text-slate-500'][$e->status] ?? 'bg-slate-100 text-slate-500' }}">● {{ ucfirst($e->status) }}</span>
         </div>
         <div class="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
           <b class="text-slate-700">{{ $jenisLabel[$e->jenis] }}</b><span>•</span><span>{{ $periode($e) }}</span>
           @foreach ($e->keterampilan->take(3) as $k)<span class="rounded-md bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand">{{ $k->nama }}</span>@endforeach
         </div>
         <p class="mt-2 text-sm text-slate-500">{{ \Illuminate\Support\Str::limit($e->deskripsi, 110) }}</p>
+        @if ($e->status === 'ditolak' && $e->catatan_admin)<p class="mt-2 rounded-xl bg-red-50 px-3 py-2 text-xs text-red-700"><b>Catatan admin:</b> {{ $e->catatan_admin }}</p>@elseif ($e->status === 'menunggu')<p class="mt-2 text-xs font-medium text-amber-700">Sedang menunggu pemeriksaan admin.</p>@endif
       </div>
       <div class="flex items-center gap-2 text-sm font-semibold">
         <a href="{{ route('mentor.portofolio.show', $e) }}" class="rounded-full bg-brand-50 px-4 py-2 text-slate-700 hover:bg-brand-100">👁 Lihat</a>

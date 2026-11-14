@@ -19,7 +19,7 @@
   ];
   // [label, nama rute atau '#', pola rute aktif, ikon]
   $menu = match ($u->peran) {
-    'admin' => [['Ringkasan', 'admin.ringkasan', 'admin.ringkasan', 'grid'], ['Portofolio', '#', '', 'folder'], ['Profil Saya', 'admin.profil', 'admin.profil*', 'user'], ['Kelola Mentor dan Akun', 'admin.akun', 'admin.akun*', 'users']],
+    'admin' => [['Ringkasan', 'admin.ringkasan', 'admin.ringkasan', 'grid'], ['Portofolio', 'admin.portofolio', 'admin.portofolio*', 'folder'], ['Profil Saya', 'admin.profil', 'admin.profil*', 'user'], ['Kelola Mentor dan Akun', 'admin.akun', 'admin.akun*', 'users']],
     'mentor' => [['Ringkasan', 'dashboard', 'dashboard', 'grid'], ['Portofolio', 'mentor.portofolio.index', 'mentor.portofolio*', 'folder'], ['Slot Jadwal', 'mentor.slot.index', 'mentor.slot*', 'cal'], ['Mentoring', 'sesi.index', 'sesi*', 'users'], ['Profil Saya', 'profil.edit', 'profil*', 'user']],
     default => [['Ringkasan', 'dashboard', 'dashboard', 'grid'], ['Portofolio', 'katalog', 'katalog*', 'folder'], ['Peta Karier', 'peta-karier.index', 'peta-karier*', 'map'], ['Mentoring', 'mentoring.index', 'mentoring*', 'users'], ['Profil Saya', 'profil.edit', 'profil*', 'user']],
   };

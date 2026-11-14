@@ -16,12 +16,12 @@ class PortofolioController extends Controller
     public function index(Request $r)
     {
         $u = $r->user();
-        $tab = in_array($r->query('tab'), ['terbit', 'draf'], true) ? $r->query('tab') : 'semua';
+        $tab = in_array($r->query('tab'), ['terbit', 'draf', 'menunggu', 'ditolak'], true) ? $r->query('tab') : 'semua';
         $cari = trim((string) $r->query('q'));
 
         // Satu query agregat untuk kartu ringkasan dan jumlah di tab.
-        $agg = $u->portofolio()->selectRaw("COUNT(*) AS semua, COALESCE(SUM(status = 'terbit'), 0) AS terbit, COALESCE(SUM(status = 'draf'), 0) AS draf")->first();
-        $jumlah = ['semua' => (int) $agg->semua, 'terbit' => (int) $agg->terbit, 'draf' => (int) $agg->draf];
+        $agg = $u->portofolio()->selectRaw("COUNT(*) AS semua, COALESCE(SUM(status = 'terbit'), 0) AS terbit, COALESCE(SUM(status = 'draf'), 0) AS draf, COALESCE(SUM(status = 'menunggu'), 0) AS menunggu, COALESCE(SUM(status = 'ditolak'), 0) AS ditolak")->first();
+        $jumlah = ['semua' => (int) $agg->semua, 'terbit' => (int) $agg->terbit, 'draf' => (int) $agg->draf, 'menunggu' => (int) $agg->menunggu, 'ditolak' => (int) $agg->ditolak];
 
         $entri = $u->portofolio()->with('keterampilan')
             ->when($tab !== 'semua', fn ($q) => $q->where('status', $tab))
@@ -36,7 +36,7 @@ class PortofolioController extends Controller
             $status === 'ditolak' => ['Verifikasi ditolak admin. Perbarui profilmu lalu hubungi admin.', false],
             $status !== 'terverifikasi' => ['Menunggu verifikasi admin untuk sinkronisasi katalog', false],
             $skill < 3 => ["Lengkapi minimal 3 keterampilan di Profil Saya ({$skill}/3)", false],
-            $jumlah['terbit'] < 1 => ['Terbitkan minimal 1 entri agar tampil di katalog', false],
+            $jumlah['terbit'] < 1 => ['Ajukan minimal 1 portofolio dan tunggu persetujuan admin agar tampil di katalog', false],
             default => ['Portofoliomu tampil di katalog publik', true],
         };
 
@@ -63,7 +63,9 @@ class PortofolioController extends Controller
         DB::transaction(function () use ($r, $data) {
             $entri = new EntriPortofolio(Arr::except($data, ['skill', 'gambar']));
             $entri->user_id = $r->user()->id;
-            $entri->terbit_pada = $data['status'] === 'terbit' ? now() : null;
+            $entri->terbit_pada = null;
+            $entri->catatan_admin = null;
+            $entri->ditinjau_pada = null;
             if ($r->hasFile('gambar')) $entri->gambar = $r->file('gambar')->store('portofolio', 'public');
             $entri->save();
             $entri->keterampilan()->sync($data['skill'] ?? []);
@@ -86,7 +88,9 @@ class PortofolioController extends Controller
         $data = $this->validasi($r);
         DB::transaction(function () use ($r, $portofolio, $data) {
             $portofolio->fill(Arr::except($data, ['skill', 'gambar']));
-            $portofolio->terbit_pada = $data['status'] === 'terbit' ? ($portofolio->terbit_pada ?? now()) : null;
+            $portofolio->terbit_pada = null;
+            $portofolio->catatan_admin = null;
+            $portofolio->ditinjau_pada = null;
             if ($r->hasFile('gambar')) {
                 if ($portofolio->gambar) Storage::disk('public')->delete($portofolio->gambar);
                 $portofolio->gambar = $r->file('gambar')->store('portofolio', 'public');
@@ -122,7 +126,7 @@ class PortofolioController extends Controller
             'tanggal_selesai' => ['nullable', 'date', Rule::when($r->filled('tanggal_mulai'), ['after_or_equal:tanggal_mulai'])],
             'deskripsi' => ['nullable', 'string', 'max:2000'],
             'gambar' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
-            'status' => ['required', 'in:terbit,draf'],
+            'status' => ['required', 'in:draf,menunggu'],
             'skill' => ['nullable', 'array'],
             'skill.*' => ['exists:keterampilan,id'],
         ], [

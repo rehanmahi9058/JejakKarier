@@ -1,7 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\{ProfilMentor, User};
+use App\Models\{EntriPortofolio, ProfilMentor, User};
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -85,6 +85,50 @@ class AdminController extends Controller
         ]);
 
         return back()->with('sukses', $profil->user->name.($ok ? ' berhasil diverifikasi.' : ' ditolak.'));
+    }
+
+
+    /** Daftar portofolio yang diajukan mentor untuk ditinjau admin. */
+    public function portofolio(Request $r)
+    {
+        $tab = in_array($r->query('tab'), ['menunggu', 'terbit', 'ditolak', 'semua'], true) ? $r->query('tab') : 'menunggu';
+        $cari = trim((string) $r->query('q'));
+        $jumlah = [
+            'menunggu' => EntriPortofolio::where('status', 'menunggu')->count(),
+            'terbit' => EntriPortofolio::where('status', 'terbit')->count(),
+            'ditolak' => EntriPortofolio::where('status', 'ditolak')->count(),
+            'semua' => EntriPortofolio::count(),
+        ];
+        $entri = EntriPortofolio::with(['mentor.profilMentor', 'keterampilan'])
+            ->when($tab !== 'semua', fn ($q) => $q->where('status', $tab))
+            ->when($cari !== '', fn ($q) => $q->where(fn ($w) => $w->where('judul', 'like', "%{$cari}%")
+                ->orWhereHas('mentor', fn ($m) => $m->where('name', 'like', "%{$cari}%")->orWhere('email', 'like', "%{$cari}%"))))
+            ->latest('updated_at')->paginate(10)->withQueryString();
+
+        return view('admin.portofolio', compact('tab', 'cari', 'jumlah', 'entri'));
+    }
+
+    /** Admin menyetujui atau menolak pengajuan publikasi portofolio. */
+    public function tinjauPortofolio(Request $r, EntriPortofolio $portofolio)
+    {
+        $data = $r->validate([
+            'aksi' => ['required', 'in:setujui,tolak'],
+            'catatan' => ['nullable', 'string', 'max:1000', Rule::requiredIf($r->input('aksi') === 'tolak')],
+        ], ['catatan.required' => 'Alasan penolakan wajib diisi.']);
+
+        if ($portofolio->status !== 'menunggu') {
+            return back()->withErrors(['portofolio' => 'Pengajuan ini sudah diproses sebelumnya.']);
+        }
+
+        $disetujui = $data['aksi'] === 'setujui';
+        $portofolio->update([
+            'status' => $disetujui ? 'terbit' : 'ditolak',
+            'catatan_admin' => filled($data['catatan'] ?? null) ? trim($data['catatan']) : null,
+            'ditinjau_pada' => now(),
+            'terbit_pada' => $disetujui ? now() : null,
+        ]);
+
+        return back()->with('sukses', 'Portofolio "'.$portofolio->judul.'" '.($disetujui ? 'berhasil diterbitkan.' : 'ditolak.'));
     }
 
     /** Aktifkan / nonaktifkan akun. Akun nonaktif tidak bisa masuk dan disembunyikan dari katalog. */
