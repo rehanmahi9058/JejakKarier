@@ -6,8 +6,8 @@ class SesiMentoring extends Model
 {
     protected $table = 'sesi_mentoring';
     public const AKTIF = ['diajukan', 'dikonfirmasi'];
-    protected $fillable = ['slot_mentoring_id','pengguna_id','mentor_id','tanggal','jam_mulai','jam_selesai','tujuan','status','catatan','tautan_pertemuan'];
-    protected $casts = ['tanggal' => 'date'];
+    protected $fillable = ['slot_mentoring_id','pengguna_id','mentor_id','tanggal','jam_mulai','jam_selesai','tujuan','status','catatan','tautan_pertemuan','checklist','umpan_balik','action_items'];
+    protected $casts = ['tanggal' => 'date', 'checklist' => 'array', 'action_items' => 'array'];
     public function slot(): BelongsTo { return $this->belongsTo(SlotMentoring::class, 'slot_mentoring_id'); }
     public function pengguna(): BelongsTo { return $this->belongsTo(User::class, 'pengguna_id'); }
     public function mentor(): BelongsTo { return $this->belongsTo(User::class, 'mentor_id'); }

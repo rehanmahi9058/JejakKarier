@@ -10,7 +10,15 @@
   <nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
     @include('partials.logo', ['sub' => 'Career & Mentoring'])
     <div class="hidden items-center gap-2 text-sm font-semibold md:flex">
-      @foreach ([['beranda', 'Beranda', 'beranda'], ['katalog', 'Katalog', 'katalog*'], ['mentoring.index', 'Cari Mentor', 'mentoring*'], ["peta-karier.index", "Peta Karier", "peta-karier*"]] as [$rute, $label, $pola])
+      @php
+        $menuPublik = [['beranda', 'Beranda', 'beranda'], ['katalog', 'Katalog', 'katalog*']];
+        // Cari Mentor dan Peta Karier hanya untuk pengguna/tamu; mentor tidak melihatnya.
+        if (! auth()->user()?->adalahMentor()) {
+          $menuPublik[] = ['mentoring.index', 'Cari Mentor', 'mentoring*'];
+          $menuPublik[] = ['peta-karier.index', 'Peta Karier', 'peta-karier*'];
+        }
+      @endphp
+      @foreach ($menuPublik as [$rute, $label, $pola])
         <a href="{{ route($rute) }}" class="rounded-lg px-3 py-1.5 {{ request()->routeIs($pola) ? 'bg-brand-100 text-brand' : 'text-slate-600 hover:text-brand' }}">{{ $label }}</a>
       @endforeach
     </div>

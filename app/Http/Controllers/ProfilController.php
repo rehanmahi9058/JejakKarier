@@ -11,6 +11,7 @@ class ProfilController extends Controller
     public function edit(Request $r)
     {
         $u = $r->user();
+        if ($u->adalahAdmin()) return redirect()->route('admin.profil');
         $mentor = $u->adalahMentor();
         $profil = match (true) {
             $mentor => ProfilMentor::firstOrCreate(['user_id' => $u->id]),
